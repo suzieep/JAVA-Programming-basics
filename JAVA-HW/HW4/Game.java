@@ -2,8 +2,9 @@ package HW4;
 
 import java.util.*;
 
-//getDamage 출력값,,,?
-//회복할 때 "오버되는 hp가 없게 하는 것"과 "빠르게 회복을 해두는 것"에 대한 우선순위가 명시되어 있지 않아서 전자를 기준으로 프로그래밍 함
+//getDamage에서 뭘 출력해야할 지 모르겠어서 일단 return 0;로 해두었음.
+
+//회복할 때 "오버되는 hp가 없게 하는 것"과 "빠르게 회복을 해두는 것"에 대한 우선순위가 명시되어 있지 않아서 전자를 기준으로 프로그래밍 함.
 //-> max Hp를 넘을 경우가 없게 코드를 짰기 때문에 최대 체력 수치 초과에 대한 코드는 없음.
 
 public class Game {
@@ -34,6 +35,8 @@ public class Game {
         blue.initialize();
         red.initialize();
 
+        System.out.println(blue.getClass().getSimpleName()+" vs "+ red.getClass().getSimpleName()+"\n");
+
         while (blue.hitPoint > 0 && red.hitPoint > 0) {
 
             blue.attack(red);
@@ -58,7 +61,9 @@ public class Game {
         Collections.shuffle(orderedList);
         orderedList.toArray(orderedChar);
 
-        battle(battle(orderedChar[0], orderedChar[1]), battle(orderedChar[2], orderedChar[3])).whoAmI();
+        Character[] finalTeam = setOrder(battle(orderedChar[0], orderedChar[1]), battle(orderedChar[2], orderedChar[3]));
+        
+        battle(finalTeam[0],finalTeam[1]).whoAmI();
 
     }
 }
@@ -86,7 +91,7 @@ abstract class Character {
         if (hitPoint > 0) {
             return false;
         } else {
-            System.out.println(this.getClass().getSimpleName() + " is dead.\n");
+            System.out.println(this.getClass().getSimpleName() + " is dead.\n\n");
             return true;
         }
     }
@@ -127,7 +132,7 @@ class Human extends Character {
 
     @Override
     public void attack(Character c) {
-        int power = 40;
+        int power = 50;
         attackSub(c, power);
     }
 
@@ -181,7 +186,7 @@ class CyberDaemon extends Character {
 
     @Override
     public boolean needPortion() {
-        if (hitPoint <= 150 && portionNumber > 0) {
+        if (hitPoint <= 200 && portionNumber > 0) {
             return true;
         } else {
             return false;
