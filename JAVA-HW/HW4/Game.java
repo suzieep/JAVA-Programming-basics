@@ -1,121 +1,117 @@
 package HW4;
-import java.beans.beancontext.BeanContextChildSupport;
-import java.lang.reflect.*;
+
+import java.util.*;
 
 //getDamage 출력값,,,?
+//회복할 때 "오버되는 hp가 없게 하는 것"과 "빠르게 회복을 해두는 것"에 대한 우선순위가 명시되어 있지 않아서 전자를 기준으로 프로그래밍 함
+//-> max Hp를 넘을 경우가 없게 코드를 짰기 때문에 최대 체력 수치 초과에 대한 코드는 없음.
 
 public class Game {
-    
-    private static Character[] orderedChar2;
-	public static void main(String[] args){
+
+    public static void main(String[] args) {
 
         Human human1 = new Human();
         CyberDaemon cyberDaemon1 = new CyberDaemon();
         Barlog barlog1 = new Barlog();
         Elf elf1 = new Elf();
-        
 
-        Character [] orderedTeam = setOrder(human1,cyberDaemon1);
-        System.out.println("who is winner?");
-        battle(orderedTeam[0],orderedTeam[1]).whoAmI();
+        tournament(human1, cyberDaemon1, barlog1, elf1);
 
     }
 
-    public static Character[] setOrder(Character aa, Character bb){
-        double per = Math.random();
-        Character [] orderedChar = {aa, bb};
+    public static Character[] setOrder(Character aa, Character bb) {
+        Character[] orderedChar = { aa, bb };
+        List<Character> orderedList = Arrays.asList(orderedChar);
+        Collections.shuffle(orderedList);
+        orderedList.toArray(orderedChar);
 
-        if (per<0.5){
-            orderedChar[0] = aa;
-            orderedChar[1] = bb;
-            return orderedChar;
-        }
-        else{
-            orderedChar[0] = bb;
-            orderedChar[1] = aa;
-            return orderedChar;
-        }
+        return orderedChar;
 
     }
 
-    public static Character battle(Character blue, Character red){
-        
+    public static Character battle(Character blue, Character red) {
+
         blue.initialize();
         red.initialize();
 
-        while(blue.hitPoint>0 && red.hitPoint>0){
-            
+        while (blue.hitPoint > 0 && red.hitPoint > 0) {
+
             blue.attack(red);
-            if(red.isDie()){
+            if (red.isDie()) {
                 return blue;
             }
             red.attack(blue);
-            if(blue.isDie()){
+            if (blue.isDie()) {
                 return red;
             }
-            
+
         }
 
         System.out.println("error");
         return red;
 
     }
-    public void tournament(Character hu, Character cyber, Character bar, Character el){
-        // 4개의 Character를 매개변수로 받으며 이들을 토너먼트로 경기를 시켜 우승자의 whoAmI() 메소드를 통해 우승자의 메시지를 출력하도록 한다. 
-        //토너먼트로 경기를 한다는 의미는 1:1로 2경기를 하고 그 승자간에 결승전을 가지도록 하여 결승전 승자가 우승을 한다는 것을 말한다.
+
+    public static void tournament(Character hu, Character cyber, Character bar, Character el) {
+        Character[] orderedChar = { hu, cyber, bar, el };
+        List<Character> orderedList = Arrays.asList(orderedChar);
+        Collections.shuffle(orderedList);
+        orderedList.toArray(orderedChar);
+
+        battle(battle(orderedChar[0], orderedChar[1]), battle(orderedChar[2], orderedChar[3])).whoAmI();
+
     }
 }
 
 abstract class Character {
 
-    public Character(){
+    public int hitPoint;
+    public int portionNumber;
+
+    public abstract void initialize();
+
+    public abstract void attack(Character c);
+
+    public abstract void recover();
+
+    public abstract boolean needPortion();
+
+    public void whoAmI() {
+        System.out.println("I'm " + this.getClass().getSimpleName());
 
     }
 
-    public int hitPoint;//캐릭터의 체력
-    public int portionNumber;//가지고 있는 물약의 수
-    public abstract void initialize();//체력과 물약의 수를 최대치로 초기화
-    public abstract void attack(Character c);//캐릭터 c에게 데미지를 준다. 데미지의 숫자는 주어진 특성에 맞도록 주며 확률이 필요한 경우 랜덤함수를 사용하여 확률별로 데미지를 주도록 한다.
-    public abstract void recover();// 물약을 먹고 체력을 캐릭터 특성에 따라 회복한다. Barlog의 경우 필요하다면 한번에 2번 물약을 먹을 수 있다.
-    public abstract boolean needPortion(); //지금 물약을 먹어야 하는 지를 판단하고 남은 물약이 있다면 물약을 소비한다.
+    public boolean isDie() {
 
-    public void whoAmI(){
-        System.out.println("I'm "+this.getClass().getSimpleName());
-
-    }
-
-    public boolean isDie(){
-    //자신이 죽었는 지 아닌지를 판단한다. 죽은 경우 “__ is dead.” 메시지를 출력한다.
-        if(hitPoint>0){
+        if (hitPoint > 0) {
             return false;
-        }
-        else{
-            System.out.println(this.getClass().getSimpleName()+" is dead.");
+        } else {
+            System.out.println(this.getClass().getSimpleName() + " is dead.\n");
             return true;
         }
     }
 
-    public int getDamage(int damage){
-        //특정 숫자의 데미지량을 받아 자신의 체력에 반영하며 필요하다면 recover() 메소드를 통해 물약을 먹고 체력을 회복하도록 한다. 
-        hitPoint-=damage;
+    public int getDamage(int damage) {
 
-        if (hitPoint>0 && needPortion()){
+        if (hitPoint > 0 && needPortion()) {
             recover();
         }
 
         return 0;
     }
-    
-    public void attackSub(Character c, int power){
-        c.getDamage(power);
-        System.out.println(this.getClass().getSimpleName()+" attacks "+ c.getClass().getSimpleName()+" with damage "+power+". "+ c.getClass().getSimpleName()+" has " + c.hitPoint+" hit point now.");
 
+    public void attackSub(Character c, int power) {
+        c.hitPoint -= power;
+        System.out
+                .println(this.getClass().getSimpleName() + " attacks " + c.getClass().getSimpleName() + " with damage "
+                        + power + ". " + c.getClass().getSimpleName() + " has " + c.hitPoint + " hit point now.");
+        c.getDamage(power);
 
     }
 
-    public void recoverSub(){
-        
-        System.out.println(this.getClass().getSimpleName()+" eats portion and "+ this.hitPoint + " hit point now.");
+    public void recoverSub() {
+
+        System.out.println(this.getClass().getSimpleName() + " eats portion and " + this.hitPoint + " hit point now.");
         portionNumber--;
     }
 
@@ -137,7 +133,7 @@ class Human extends Character {
 
     @Override
     public void recover() {
-        hitPoint+=40;
+        hitPoint += 40;
         recoverSub();
     }
 
@@ -154,9 +150,6 @@ class Human extends Character {
 
 class CyberDaemon extends Character {
 
-    CyberDaemon(){
-
-    }
     @Override
     public void initialize() {
         hitPoint = 250;
@@ -167,7 +160,7 @@ class CyberDaemon extends Character {
     public void attack(Character c) {
         int power = 40;
         double per = Math.random();
-        if (per<0.3){
+        if (per < 0.3) {
             power = 60;
         }
         attackSub(c, power);
@@ -176,17 +169,15 @@ class CyberDaemon extends Character {
     @Override
     public void recover() {
         double per = Math.random();
-        if (per<0.3){
-            hitPoint+=50;
+        if (per < 0.3) {
+            hitPoint += 50;
+            recoverSub();
+        } else {
+            hitPoint += 30;
             recoverSub();
         }
-        else{
-            hitPoint+=30;
-            recoverSub();
-        }
-        
-    }
 
+    }
 
     @Override
     public boolean needPortion() {
@@ -201,9 +192,6 @@ class CyberDaemon extends Character {
 
 class Barlog extends Character {
 
-    Barlog(){
-
-    }
     @Override
     public void initialize() {
         hitPoint = 170;
@@ -214,11 +202,11 @@ class Barlog extends Character {
     public void attack(Character c) {
         double per = Math.random();
         int hit = 0;
-        int power =25;
+        int power = 25;
         while (hit < 2) {
             if (per < 0.2) {
                 power = 35;
-            } 
+            }
             attackSub(c, power);
             hit++;
         }
@@ -226,21 +214,20 @@ class Barlog extends Character {
 
     @Override
     public void recover() {
-        if(portionNumber>1){
+        if (portionNumber > 1) {
             hitPoint += 30;
             recoverSub();
             hitPoint += 30;
             recoverSub();
-        }
-        else {
-            hitPoint+=30;
+        } else {
+            hitPoint += 30;
             recoverSub();
         }
     }
 
     @Override
     public boolean needPortion() {
-        if (hitPoint <= 140 && portionNumber > 0) {
+        if (hitPoint <= 110 && portionNumber > 0) {
             return true;
         } else {
             return false;
@@ -250,10 +237,6 @@ class Barlog extends Character {
 }
 
 class Elf extends Character {
-
-    Elf(){
-
-    }
 
     @Override
     public void initialize() {
@@ -265,22 +248,21 @@ class Elf extends Character {
     public void attack(Character c) {
         double per = Math.random();
         int power = 35;
-        if (per<0.3){
-            power=70;
+        if (per < 0.3) {
+            power = 70;
         }
         attackSub(c, power);
-        
+
     }
 
     @Override
     public void recover() {
         double per = Math.random();
-        if (per<0.25){
-            hitPoint+=60;
+        if (per < 0.25) {
+            hitPoint += 60;
             recoverSub();
-        }
-        else{
-            hitPoint+=30;
+        } else {
+            hitPoint += 30;
             recoverSub();
         }
 
@@ -288,7 +270,7 @@ class Elf extends Character {
 
     @Override
     public boolean needPortion() {
-        if (hitPoint <= 140 && portionNumber > 0) {
+        if (hitPoint <= 120 && portionNumber > 0) {
             return true;
         } else {
             return false;
