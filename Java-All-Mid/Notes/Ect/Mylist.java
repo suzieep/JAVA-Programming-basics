@@ -4,7 +4,7 @@ import java.util.*;
 
 public class Mylist {
     public static void main(String[] args) {
-        List a1 = new ArrayList();
+        List<String> a1 = new ArrayList<>();
         a1.add("수성 ");
         a1.add("화성 ");
         a1.add("지구 ");
@@ -14,7 +14,7 @@ public class Mylist {
         System.out.print("\n" + a1.get(1));
         a1.add(1, "금성 ");
         System.out.print("\n" + a1);
-        List l1 = new LinkedList();
+        List<String> l1 = new LinkedList<>();
         l1.add("수성 ");
         l1.add("화성 ");
         l1.add("지구 ");
